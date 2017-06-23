@@ -31,6 +31,7 @@ from kytos.core.events import KytosEvent
 from kytos.core.helpers import now
 from kytos.core.logs import LogManager
 from kytos.core.napps.manager import NAppsManager
+from kytos.core.napps.napps_dir_listener import NAppDirListener
 from kytos.core.switch import Switch
 from kytos.core.tcp_server import KytosRequestHandler, KytosServer
 
@@ -101,6 +102,9 @@ class Controller(object):
                                     self.options.api_port)
 
         self.register_kytos_endpoints()
+
+        #: Observer that handle napps changes.
+        self.napp_dir_listener = NAppDirListener(self)
 
         #: Adding the napps 'enabled' directory into the PATH
         #: Now you can access the enabled napps with:
@@ -205,6 +209,7 @@ class Controller(object):
 
         self.log.info("Loading Kytos NApps...")
         self.load_napps()
+        self.napp_dir_listener.start()
         self.started_at = now()
 
     def register_kytos_endpoints(self):
@@ -275,6 +280,7 @@ class Controller(object):
         self.server.shutdown()
         self.buffers.send_stop_signal()
         self.api_server.stop_api_server()
+        self.napp_dir_listener.stop()
 
         for thread in self._threads.values():
             self.log.info("Stopping thread: %s", thread.name)
@@ -595,6 +601,8 @@ class Controller(object):
             napp_name (str): Name of the NApp to be unloaded.
         """
         napp = self.napps.pop((username, napp_name), None)
+        self.log.info(napp)
+
         if napp is None:
             self.log.warning('NApp %s/%s was not loaded', username, napp_name)
         else:
