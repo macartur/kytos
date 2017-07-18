@@ -16,4 +16,4 @@ build:
             - true
     tests:
         before:
-            - sed -i 's|.*http.*watchdog.*||' requirements.txt
+            - sed -i 's|.*http.*watchdog.*||' requirements/run.in
