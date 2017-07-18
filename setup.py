@@ -283,6 +283,9 @@ setup(name='kytos',
       include_package_data=True,
       data_files=[(os.path.join(BASE_ENV, 'etc/kytos'), ETC_FILES)],
       packages=find_packages(exclude=['tests']),
+      dependency_links=[
+          'https://github.com/diraol/watchdog/archive/master.zip#egg=watchdog'
+      ],
       extras_require={
           'dev': [
               'coverage',
