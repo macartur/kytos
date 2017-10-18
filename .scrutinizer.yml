@@ -11,6 +11,11 @@ build:
         python: 3.6.0
         postgresql: false
         redis: false
+        docker:
+          remote_engine: true
+          cache:
+            images:
+            - "alpine"
     dependencies:
         before:
             - pip install coverage git+git://github.com/diraol/watchdog.git#egg=watchdog
