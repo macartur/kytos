@@ -14,7 +14,7 @@ class TestStruct(TestCase):
     """Test the alpine container."""
 
     @classmethod
-    def execute(cls, command, expected=None, timeout=60, with_sudo=False):
+    def execute(cls, command, expected=None, timeout=120, with_sudo=False):
         """Execute command inside the bash"""
         if with_sudo:
             command = 'sudo ' + command
