@@ -1,4 +1,6 @@
 """Test connectivity between to hosts in Mininet."""
+import os
+import sys
 from unittest import TestCase
 
 import pexpect
@@ -6,10 +8,20 @@ import pexpect
 CONTAINER = 'kytos_tests'
 IMAGE = 'alpine'
 PROMPT = '/ # '
+WITH_SUDO = False if os.geteuid() != 0 else True
 
 
 class TestAlpine(TestCase):
     """Test the alpine container."""
+
+    @classmethod
+    def execute(cls, command, expected=None, timeout=60, with_sudo=False):
+        """Execute command inside the bash"""
+        if with_sudo:
+            command = 'sudo ' + command
+        cls._kytos = pexpect.spawn(command)
+        if expected is not None:
+            cls._kytos.expect(expected, timeout=timeout)
 
     @classmethod
     def setUpClass(cls):
@@ -17,25 +29,18 @@ class TestAlpine(TestCase):
 
         Download the alpine image and starts a new container.
         """
-        # Start the docker daemon
-#        cls._kytos = pexpect.spawn(f'sudo dockerd')
-        cls._kytos = pexpect.spawn(f'sudo service docker start')
-        cls._kytos.expect(pexpect.EOF)
+        cls.execute('dockerd', with_sudo=True)
+        cls.execute('service docker start', with_sudo=True)
 
         # Download the alpine container
-        cls._kytos = pexpect.spawn(f'sudo docker pull alpine')
-        expected = ['Status: Downloaded newer image for alpine:latest']
-        cls._kytos.expect(expected, timeout=120)
+        cls.execute('docker pull alpine', 'alpine:latest', with_sudo=WITH_SUDO)
 
         # Verify whether the alpine image is installed.
-        cls._kytos = pexpect.spawn(f'sudo docker images')
-        cls._kytos.expect('alpine', timeout=60)
+        cls.execute('docker images', 'alpine')
 
         # Start the alpine container to run the tests
-        cls._kytos = pexpect.spawn(
-            f'sudo docker run --rm -it --privileged --name {CONTAINER} {IMAGE}'
-        )
-        cls._kytos.expect(PROMPT, timeout=60)
+        cmd = f'docker run --rm -it --name {CONTAINER} {IMAGE}'
+        cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
 
     def test0000_uname_a(self):
         """Test expected 'uname -a' command using the container."""
@@ -47,6 +52,9 @@ class TestAlpine(TestCase):
     def tearDownClass(cls):
         """Stop container."""
         bash = pexpect.spawn('/bin/bash')
-        bash.sendline(f'sudo docker kill {CONTAINER} && exit')
+        command = f'docker kill {CONTAINER} && exit'
+        if WITH_SUDO:
+            command = 'sudo ' + command
+        bash.sendline(command)
         bash.expect(f'\r\n{CONTAINER}\r\n', timeout=120)
         bash.wait()
