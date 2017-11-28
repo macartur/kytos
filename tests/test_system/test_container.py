@@ -1,5 +1,4 @@
 """Test connectivity between to hosts in Mininet."""
-import os
 from unittest import TestCase
 
 import pexpect
@@ -7,14 +6,14 @@ import pexpect
 CONTAINER = 'kytos_tests'
 IMAGE = 'kytos/systests'
 PROMPT = 'root@.*:/usr/local/src/kytos# '
-WITH_SUDO = True if os.geteuid() == 0 else False
+WITH_SUDO = True
 
 
 class TestStruct(TestCase):
     """Test the alpine container."""
 
     @classmethod
-    def execute(cls, command, expected=None, timeout=120, with_sudo=False):
+    def execute(cls, command, expected=None, timeout=60, with_sudo=False):
         """Execute command inside the bash"""
         if with_sudo:
             command = 'sudo ' + command
@@ -36,7 +35,7 @@ class TestStruct(TestCase):
                     with_sudo=WITH_SUDO)
 
         # Verify whether the image is installed.
-        cls.execute('docker images', f'{IMAGE}')
+        cls.execute('docker images', f'{IMAGE}', with_sudo=WITH_SUDO)
 
         # Start the container to run the tests
         cmd = f'docker run --rm -it --name {CONTAINER} {IMAGE}'
