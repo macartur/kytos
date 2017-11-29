@@ -7,7 +7,7 @@ import pexpect
 CONTAINER = 'kytos_tests'
 IMAGE = 'kytos/systests'
 PROMPT = 'root@.*:/usr/local/src/kytos# '
-WITH_SUDO = True if (os.geteuid() == 0) else False
+WITH_SUDO = True
 PROJECTS = ['python-openflow', 'kytos-utils', 'kytos']
 NAPPS = ['kytos/of_core', 'kytos/of_lldp']
 
@@ -30,22 +30,23 @@ class TestStruct(TestCase):
 
         Download the image and starts a new container.
         """
+        cls.execute('dockerd', with_sudo=True)
+
         cls.execute('service docker start', 'docker start/running', with_sudo=True)
-        print(WITH_SUDO)
 
         # Download the container
         cls.execute(f'docker pull {IMAGE}', f'{IMAGE}:latest',
-                    with_sudo=WITH_SUDO)
+                    with_sudo=True)
 
         # Verify whether the image is installed.
-        cls.execute('docker images', f'{IMAGE}', with_sudo=WITH_SUDO)
+        cls.execute('docker images', f'{IMAGE}', with_sudo=True)
 
         # Start the container to run the tests
         cmd = f'docker run --rm -it --name {CONTAINER} {IMAGE}'
-        cls._kytos = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
+        cls._kytos = cls.execute(cmd, PROMPT, with_sudo=True)
 
         cmd = f'docker exec -it --privileged {CONTAINER} /bin/bash'
-        cls._mininet = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
+        cls._mininet = cls.execute(cmd, PROMPT, with_sudo=True)
 
         cls._kytos.sendline("pip install ruamel.yaml")
         cls._kytos.expect("Successfully installed ruamel.yaml")
