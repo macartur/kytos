@@ -30,8 +30,8 @@ class TestStruct(TestCase):
 
         Download the image and starts a new container.
         """
-        cls.execute('dockerd', with_sudo=True)
-        cls.execute('service docker start', with_sudo=True)
+        cls.execute('service docker start', 'docker start/running', with_sudo=True)
+        print(WITH_SUDO)
 
         # Download the container
         cls.execute(f'docker pull {IMAGE}', f'{IMAGE}:latest',
@@ -43,6 +43,7 @@ class TestStruct(TestCase):
         # Start the container to run the tests
         cmd = f'docker run --rm -it --name {CONTAINER} {IMAGE}'
         cls._kytos = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
+
         cmd = f'docker exec -it --privileged {CONTAINER} /bin/bash'
         cls._mininet = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
 
