@@ -56,15 +56,6 @@ class TestStruct(TestCase):
         self._kytos.expect(['Fast-forward', 'up-to-date'])
         self._kytos.expect(PROMPT)
 
-    def test01_install_projects(self):
-        """Install Kytos projects from cloned repository in safe order."""
-        pip = 'pip install --no-index --find-links $KYTOSDEPSDIR .'
-        PROJECTS = ['python-openflow']
-        for project in PROJECTS:
-            self._kytos.sendline(f'cd $KYTOSDIR/{project}; {pip}; cd -')
-            self._kytos.expect(f'Successfully installed .*{project}', timeout=30)
-            self._kytos.expect(PROMPT)
-
     @classmethod
     def tearDownClass(cls):
         """Stop container."""
