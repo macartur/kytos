@@ -11,6 +11,7 @@ WITH_SUDO = True if (os.environ.get('USER') is None) else False
 PROJECTS = ['python-openflow', 'kytos-utils', 'kytos']
 NAPPS = ['kytos/of_core', 'kytos/of_lldp']
 
+
 class TestStruct(TestCase):
     """Test the alpine container."""
 
@@ -30,9 +31,10 @@ class TestStruct(TestCase):
 
         Download the image and starts a new container.
         """
-        cls.execute('dockerd', with_sudo=True)
-
-        cls.execute('service docker start', 'docker start/running', with_sudo=True)
+        if WITH_SUDO:
+            cls.execute('dockerd', with_sudo=True)
+            cls.execute('service docker start', 'docker start/running',
+                        with_sudo=True)
 
         # Download the container
         cls.execute(f'docker pull {IMAGE}', f'{IMAGE}:latest',
@@ -45,8 +47,8 @@ class TestStruct(TestCase):
         cmd = f'docker run --rm -it --name {CONTAINER} {IMAGE}'
         cls._kytos = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
 
-#        cmd = f'docker exec -it --privileged {CONTAINER} /bin/bash'
-#        cls._mininet = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
+        cmd = f'docker exec -it {CONTAINER} /bin/bash'
+        cls._mininet = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
 
         cls._kytos.sendline("pip install ruamel.yaml")
         cls._kytos.expect("Successfully installed ruamel.yaml")
@@ -80,18 +82,18 @@ class TestStruct(TestCase):
         # Regex is for color codes
         self._kytos.expect(r'kytos \$> ')
 
-#    def test03_install_napps(self):
-#        """Install NApps for the ping to work.
-#
-#
-#        As self._kytos is blocked in kytosd shell, we use mininet terminal.
-#        """
-#        for napp in NAPPS:
-#            self._mininet.sendline(f'kytos napps install {napp}')
-#            self._mininet.expect('INFO      Enabled.')
-#            napp_name = napp.split('/')[0]
-#            self._kytos.expect(napp_name +'.+Running NApp')
-#            self._mininet.expect(PROMPT)
+    def test03_install_napps(self):
+        """Install NApps for the ping to work.
+
+
+        As self._kytos is blocked in kytosd shell, we use mininet terminal.
+        """
+        for napp in NAPPS:
+            self._mininet.sendline(f'kytos napps install {napp}')
+            self._mininet.expect('INFO      Enabled.')
+            napp_name = napp.split('/')[0]
+            self._kytos.expect(napp_name + '.+Running NApp')
+            self._mininet.expect(PROMPT)
 
     @classmethod
     def tearDownClass(cls):
