@@ -7,7 +7,7 @@ import pexpect
 CONTAINER = 'kytos_tests'
 IMAGE = 'kytos/systests'
 PROMPT = 'root@.*:/usr/local/src/kytos# '
-WITH_SUDO = True if os.geteuid() == 0 else False
+WITH_SUDO = True
 
 
 class TestStruct(TestCase):
