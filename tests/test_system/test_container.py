@@ -95,6 +95,13 @@ class TestStruct(TestCase):
             self._kytos.expect(napp_name + '.+Running NApp')
             self._mininet.expect(PROMPT)
 
+    def test04_launch_mininet(self):
+        """Start mininet with OF 1.0 and Kytos as controller."""
+        self._mininet.sendline(
+            'mn --topo linear,2 --mac --controller=remote,ip=127.0.0.1'
+            ' --switch ovsk,protocols=OpenFlow10')
+        self._mininet.expect('mininet> ', timeout=120)
+
     @classmethod
     def tearDownClass(cls):
         """Stop container."""
