@@ -44,10 +44,10 @@ class TestStruct(TestCase):
         cls.execute('docker images', f'{IMAGE}', with_sudo=WITH_SUDO)
 
         # Start the container to run the tests
-        cmd = f'docker run --rm -it --name {CONTAINER} {IMAGE}'
+        cmd = f'docker run --rm -it --privileged --name {CONTAINER} {IMAGE}'
         cls._kytos = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
 
-        cmd = f'docker exec -it {CONTAINER} /bin/bash'
+        cmd = f'docker exec -it --privileged {CONTAINER} /bin/bash'
         cls._mininet = cls.execute(cmd, PROMPT, with_sudo=WITH_SUDO)
 
         cls._kytos.sendline("pip install ruamel.yaml")
