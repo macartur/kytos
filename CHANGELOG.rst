@@ -3,25 +3,16 @@ Changelog
 #########
 All notable changes to the kytos project will be documented in this file.
 
-[UNRELEASED] - Under development
-********************************
-Added
-=====
-
+[2017.2] - "chico" - 2017-12-21
+*******************************
 Changed
 =======
+- Web User Interface totally updated, with new design and functionality:
 
-Deprecated
-==========
+  - Visual elements reorganized for better experience.
+  - Better information about switches and interfaces in the network.
+  - Extending interface functionalities became easier.
 
-Removed
-=======
-
-Fixed
-=====
-
-Security
-========
 
 [2017.2b2] - "chico" beta2 - 2017-12-01
 ***************************************
@@ -88,17 +79,11 @@ Deprecated
 ==========
 - Method ``register_rest_endpoint`` of ``Controller`` and ``APIServer`` in favor of ``@rest`` decorator.
 
-Removed
-=======
-
 Fixed
 =====
 - Some bug fixes in tests.
 - Several documentation fixes.
 - Several bug fixes.
-
-Security
-========
 
 
 [2017.1] - "bethania" - 2017-07-06
@@ -114,18 +99,9 @@ Changed
 - Documentation updated and improved.
 - Improved setup process.
 
-Deprecated
-==========
-
-Removed
-=======
-
 Fixed
 =====
 - Some bug fixes.
-
-Security
-========
 
 
 [2017.1b3] - "bethania" beta3 - 2017-06-16

@@ -1,0 +1,393 @@
+Summary
+=======
+
+Title
+-----
+MEF E-Line (or Point-to-Point Ethernet Virtual Circuit) Service Provisioning
+NApp
+
+Authors
+-------
+Jeronimo Bezerra (Amlight), Vinicius Arcanjo (RNP), Antonio Francisco (ANSP),
+Rogerio Motitsuki (ANSP), Beraldo Leal, (Kytos), Renan Rodrigo (Kytos)
+
+Blueprint Status
+----------------
+work-in-progress
+
+Priority
+--------
+high
+
+Tags
+----
+eline, mef, circuit, provisioning, sdn
+
+Milestone Target
+----------------
+2018.1 (dalva)
+
+Implementation
+--------------
+started
+
+Assignees
+---------
+Renan Rodrigo, Antonio Francisco
+
+Approvers (PTL)
+---------------
+Vinicius Arcanjo, Beraldo Leal
+
+Version
+-------
+0.0.1
+
+Specifications
+--------------
+https://wiki.mef.net/display/CESG/MEF+6.2+-+EVC+Services
+
+https://wiki.mef.net/display/CESG/MEF+10.3+-+Ethernet+Services+Attributes
+
+https://napps.kytos.io/kytos/mef_eline
+
+Description
+===========
+The Metro Ethernet Forum (MEF) has created the MEF Carrier Ethernet (CE)
+certification aiming to standardize the language used in interactions between
+ISPs and users. Each MEF CE service is composed by many basic items, such as
+User Network Interfaces (UNI), service restoration time and bandwidth profiles.
+
+A MEF E-Line service or Ethernet Virtual Service (EVC) is a service type to
+connect exactly two UNIs where those two UNIs can communicate only with one
+another. The MEF E-Line service is defined by MEF 6.2 and MEF 10.3
+specifications.
+
+The MEF E-Line services has two categories:
+
+  * EPL or Ethernet Private Line (Port-based)
+  * EVPL or Ethernet Virtual Private Line (VLAN-based)
+
+The main distinction between EPL and EVPL is that EPL encapsulates all traffic
+between two UNIs while EVPL uses a virtual circuit distinguisher, such as a
+VLAN VID or a MPLS TAG, to create the virtual service.
+
+This blueprint describes the requirements to support MEF E-Line services over
+the Kytos SDN Platform as a NApp or a set of NApps.
+
+REST API and WEB UI
+===================
+Service provisioning and monitoring will be supported initially via REST API.
+The support for a web UI is planned for future releases.
+
+Provisioning Requirements
+=========================
+
+In this section we describe the target behaviour. All code here is in
+pseudo-code.
+
+1. User submits an EVC request via E-Line NApp's REST
+
+#. For EVPL: E-Line NApp verifies if UNI_A's requested C-VID and UNI_Z's requested C-VID are
+   available from the interfaces' pools.
+
+#. E-Line NApp requests a primary and a backup path to the Pathfinder NApp
+   using the attributes _primary_links_ and _backup_links_ submitted via REST
+
+#. For each link composing paths in #3:
+
+   #. E-Line NApp requests a S-VID available from the link VLAN pool.
+   #. Using the S-VID obtained, generate abstract flow entries to be sent to
+      FlowManager
+
+#. Push abstract flow entries to FlowManager and FlowManager pushes OpenFlow
+   entries to datapaths
+
+#. E-Line NApp generates an event to notify all Kytos NApps of a new EVC
+   creation
+
+#. Notify user of the status of its request
+
+.. note::
+
+  EVCs must be created even if there is a link or interface down in the path.
+  In this case, user should be notified that the EVC was created but it
+  is not operational.
+
+In order to create an EVC, the user must send a POST request using the
+following example:
+
+.. code:: bash
+
+  POST /kytos/mef_eline/v2.0/evc/
+
+Information necessary to create the EVC:
+
+.. code:: bash
+
+  {UNI_A*, UNI_Z*, str name*, str bandwidth, datetime start_date, datetime
+  end_date, [str primary_links], [str backup_links], bool dynamic_backup_path,
+  tenant, service_level}
+
+**\*Required fields**
+
+.. code:: python
+
+  class TAG:
+     tag_type
+     value
+
+  class Interface:
+     dpid
+     port
+
+  class UNI(Interface):
+    user_tag # TAG object
+
+  class NNI(Interface)
+
+  class vNNI(NNI)
+    service_tag # TAG object
+
+  class EVC:
+    _requested  # dict with the user original request (input)
+    id = uuid()
+    current_path  # circuit being used at the moment
+    primary_path  # primary circuit offered to user IF one or more links were provided in the request
+    backup_path  # backup circuit offered to the user IF one or more links were provided in the request
+    request_time = now()  # datetime of user request for a EVC
+    creation_time = now() | schedule()  # datetime when the circuit should be activated
+    owner = get_user(REST)
+    status = [UP|DOWN]  # (operation)
+    enabled = [True|False]  # (administrative)
+    priority = Integer  # service level provided in the request. "gold", "silver", ...
+    # (...) everything else from request must be @property
+
+    def create()
+    def discover_new_path()
+    def change_path(path)
+    def reprovision()  # force EVC (re-)provisioning
+    def remove()
+
+
+**Default values:**
+
+.. code:: python
+
+  start_date = now()
+  end_date = # never
+  primary_links = # system provided
+  backup_links = # system provided
+  bandwidth = None
+
+**Return Codes Examples:**
+
+        200: Circuit created
+        201: Circuit created but not active (link down)
+        401: Permission denied
+
+Interface tags pool mechanism
+-----------------------------
+
+*For each Interface object:*
+Each Interface object will have its own VLAN pool with pop() and push()
+methods. This pool will be used for EPLs. Administrator might predefine via
+configuration the VLAN pool to be used (for instance, VLAN 100 to 200).
+
+*For each Link object:*
+Each Link object will have its own VLAN pool to be used by two
+directly-connected NNIs. pop() and push() methods should be available.
+Administrator might predefine via configuration the VLAN pool to be used
+(for instance, VLAN 100 to 200).
+
+Milestones
+==========
+
+Milestone: Basic EPL and EVPL
+-----------------------------
+
+*Dependencies:* controller (Interface class)
+
+*Target Release:* 2018.1b1 (Mar/2018)
+
+*GH Issue*: https://github.com/kytos/mef_eline/issues/2
+
+*Features:*
+
+  * EVC will be created after a REST request
+  * REST request must include all options
+  * EVCs will have two UNIs
+  * EVCs won't have backup paths
+  * EVCs won't have explicit-provided paths
+  * EVCs won't have metrics
+  * EVCs won't support bandwidth profiles
+  * EVCs will be fully based on VLANs
+  * EVCs might terminate on NNIs (NNI acting as UNI)
+
+.. note::
+
+  *TODO*: specify which integrations tests should be executed to validate this
+  NApp.
+
+*Additional Information:*
+
+  * MEF E-Line Napp will have methods to validate all fields provided in the
+    REST request but only UNI_A and UNI_Z will be processed.
+
+Milestone: Basic EPL and EVPL with explicit primary_links and backup_links
+--------------------------------------------------------------------------
+
+*Dependencies:* 1. Pathfinder must support search with specific paths; 2.
+Topology must support static topology (topology with links and interfaces that
+are down)
+
+*Target Release:* 2018.1b1
+
+*Features:*
+
+  * REST requests' explicit-provided _primary_links_ and _backup_links_ will
+    be used.
+
+*Additional Information:*
+
+  * None
+
+Milestone:  Calendaring
+-----------------------
+
+*Dependencies:* 1. Calendaring Napp (thread looking for circuits to be
+activated)
+
+*Target Release:* TBA
+
+*Features:*
+
+  * EVC will support scheduling for activation and removal, processing both
+    REST options start_date and end_date
+  * EVC will support of scheduling of specific routines and time intervals,
+    such as _every_night_, _every_tuesday_, _every_day_from_2am_to_5pm_, and
+    others.
+
+*Additional Information:*
+
+  * None
+
+Milestone: Link Protection
+--------------------------
+
+*Dependencies:*
+
+*Target Release:* TBA
+
+*Features:*
+
+  * EVCs will have support for backup paths
+  * EVCs will have support for explicit-provided paths
+  * Users might have redundant UNIs in different networking devices working in
+    an active/backup approach;
+
+Milestone: Metrics Requirements
+-------------------------------
+
+*Dependencies:*
+
+*Target Release:* TBA
+
+*Features:*
+
+  * For path definition, user might require specific link metrics (any path,
+    limited by # of hops, using specific metrics (cost, average utilization,
+    available bandwidth, one-way delay, loss seen, custom/affinity, etc.).
+  * Users might request specific bandwidth profiles (bandwidth profiles have
+    higher priority over metrics specified during the path definition and
+    bandwidth profiles might have a queue associated with the circuit)
+
+Future
+======
+  * Network-to-Network Interfaces (NNI) when using VLAN should be transparent
+    to the user
+  * Network-to-Network Interfaces (NNI) could use random MPLS label range
+  * Network-to-Network Interfaces (NNI) could use predefined MPLS label range
+  * Network-to-Network Interfaces (NNI) when using MPLS should be transparent
+    to the user
+  * (High Resilience Requirements) Cluster/Failover/HA/HP
+  * (Security Requirements) Per-user and per-item ACLs
+  * (Security Requirements) Authorization
+  * Persistency
+  * (Reports) Link, Port and Circuit Utilization for customizable intervals
+    back to 10 years
+  * (Reports) Number of flow entries per device (w/ triggers)
+  * (Reports) Number of OF messages exchanged (w/ triggers)
+
+Glossary
+========
+  * Backup Path – A Path used when the Primary Path is unavailable.
+  * Carrier Ethernet – ISP that offers transport services using the Ethernet
+    protocol.
+  * Circuit – See EVC.
+  * CE router – See Customer Edge.
+  * Customer Edge – Customer Network’s network device connected to an ISP.
+  * Customer VLAN ID – VLAN ID part of a frame originated at and with meaning
+    only to a Customer Network.
+  * C-VID – See Customer VLAN ID.
+  * Datapath – Network device responsible for forwarding frames in a switched
+    network.
+  * Datapath ID – Exclusive identifier of a Datapath.
+  * ENNI - Demarcation point between two Carrier Ethernet Networks part of a
+    multi-domain EVC.
+  * EPL – Ethernet Private Line. A service that transports all data between two
+    UNIs, completely unaware of its content.
+  * Ethernet – IEEE 802.3 protocol used to connect local network devices and
+    uses MAC addresses to uniquely identify its members.
+  * EVC – Ethernet Virtual Connection – A service container connecting two or
+    more subscriber sites’ UNIs. EVCs could be Point-to-Point (E-Line),
+    Multipoint-to-Multipoint (E-LAN) and Rooted Multipoint (E-Tree). EVC is
+    defined in MEF 10.2 technical specification.
+  * EVPL – Ethernet Virtual Private Line. A service that transports data
+    between two UNIs based on logical identifiers, such as VLAN IDs.
+  * Interface – See Network Interface.
+  * ISP - Internet Service Provider.
+  * L2VPN – Layer 2 Virtual Private Network, similar to EVC.
+  * Linear Circuit – An EVC without any redundancy where all components are
+    single points of failure.
+  * Link – A physical or virtual connection between two network devices. A Link
+    might be a EVC over another Carrier Ethernet network or an optical fiber
+    operating at 100Gbps.
+  * MEF – Metro Ethernet Forum.
+  * MPLS label – Equivalent to VLAN’s identifier, a MPLS label is responsible
+    to identify a specific forwarding action in a router or in a domain.
+  * Multi-domain EVC – An EVC that is composed by multiple and independent
+    Carrier Ethernet networks interconnected via one or more ENNIs.
+  * Network Interface – A physical component in a network device that is used
+    to connect to external devices. Network Interfaces are usually available
+    via standard connections, such as UTP, SFP, XFP, CFP2 and serial ports. In
+    an OpenFlow device, each network interface has its own OpenFlow port
+    number.
+  * NNI - Demarcation point between two network devices part of the same
+    Carrier Ethernet network.
+  * Node – See Datapath.
+  * Path – A set of Links that connects two network devices.
+  * Port – See Interface.
+  * Primary Path – A path that is always used when available.
+  * Protected Circuit – An EVC that has no single points of failure, being very
+    resilient.
+  * PE router – See Provider Edge.
+  * Provider Edge – ISP’s network device connected to a Customer Network.
+  * QinQ – Protocol used to encapsulate Ethernet frames with more than one VLAN
+    ID. Also known as double encapsulation or VMAN.
+  * Service VLAN ID – A VLAN identifier used to encapsulate and transport
+    C-VIDs over the Carrier Ethernet network. S-VID adds an extra VLAN ID to
+    user’s frame using QinQ or it pushes a MPLS label to it.
+  * S-VID – See Service VLAN ID.
+  * Trunk – Link where both sites of the connection belong to the same Carrier
+    Ethernet network.
+  * UNI – Demarcation point between a Carrier Ethernet provider and a customer
+    network.
+  * UNI-C – Customer side of the demarcation point between a Carrier Ethernet
+    provider and a Customer Network.
+  * UNI-N – Provider/Network side of the demarcation point between a Carrier
+    Ethernet provider and a Customer Network, part of a carrier network’s
+    network device.
+  * VLAN – Extension of the Ethernet protocol to support logical separation in
+    a data link layer.
+  * VLAN ID – A 12 bits field number used to identify a VLAN.
