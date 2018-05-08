@@ -32,6 +32,24 @@ class TAG:
     def __eq__(self, other):
         return self.tag_type == other.tag_type and self.value == other.value
 
+    def as_dict(self):
+        """Dict representation for the tag object."""
+        return {'tag_type': self.tag_type, 'value': self.value}
+
+    def as_json(self):
+        """Json representation for the tag object."""
+        return json.dumps(self.as_dict())
+
+    @classmethod
+    def load_from_dict(cls, tag_dict):
+        """Class method to load TAG from dict."""
+        return cls(tag_dict.get('tag_type'), tag_dict.get('value'))
+
+    @classmethod
+    def load_from_json(cls, tag_json):
+        """Class method to load TAG from json."""
+        return cls.load_from_dict(json.loads(tag_json))
+
 
 class Interface(GenericEntity):  # pylint: disable=too-many-instance-attributes
     """Interface Class used to abstract the network interfaces."""
@@ -395,6 +413,26 @@ class UNI:
         if self.user_tag:
             return self.interface.is_tag_available(self.user_tag)
         return True
+
+    def as_dict(self):
+        """Dict representation for the UNI object."""
+        return {'interface_id': self.interface.id,
+                'tag': self.user_tag.as_dict()}
+
+    def as_json(self):
+        """Json representation for the UNI object."""
+        return json.dumps(self.as_dict())
+
+    @classmethod
+    def load_from_dict(cls, uni_dict):
+        """Class method to load UNI from dict."""
+        return cls(uni_dict.get('interface'),
+                   TAG.load_from_dict(uni_dict.get('tag')))
+
+    @classmethod
+    def load_from_json(cls, uni_json):
+        """Class method to load UNI from json."""
+        return cls.load_from_dict(json.loads(uni_json))
 
 
 class NNI:
