@@ -11,7 +11,7 @@
 {% if  active == "index" or active == "home" %}
   {% set docs_sidebar_size = "6" %}
 {% else %}
-  {% set docs_sidebar_size = "5" %}
+  {% set docs_sidebar_size = "4" %}
 {% endif %}
 
 {%- block content %}
@@ -23,7 +23,7 @@
      </aside>
      <div id="container-sphinx" class="container-fluid">
       <div class="row col-md-offset-{{docs_sidebar_size}}">
-        <div class="content" id="kytos-theme-content-container">
+	 <div class="content content-{{active}}" id="kytos-theme-content-container">
           {% block body %}{% endblock %}
           <div class='row'>
             <ul class='prev-next-nav'>
