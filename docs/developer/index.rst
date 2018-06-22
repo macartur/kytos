@@ -73,7 +73,13 @@ Kytos Summit is the main Kytos Project’s event. In addition to afull schedule 
    :hidden:
    :includehidden:
 
+   intro
+   architecture
+   setup_develop_environment
+   creating_a_napp
    how_to_contribute
    hacking
-   platform
+   security
    pyof
+
+
