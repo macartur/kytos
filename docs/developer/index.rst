@@ -9,7 +9,7 @@ KYTOS SDN PLATFORM WAS DESIGNED TO BE EASY TO USE, DEVELOP AND SHARE NETWORK APP
 
 This section was designed to lead new developers in understanding the Kytos
 project. First, we recommend the reading of the Kytos architecture in
-:doc:`Devel Guide </developer/platform>`. There you will learn how to install
+:doc:`Devel Guide </developer/intro>`. There you will learn how to install
 and configure Kytos and the NApps, as well as understand the develop
 environment. Then, give a try to the `tutorials <http://tutorials.kytos.io/>`__
 made by Kytos Team.
@@ -24,7 +24,7 @@ made by Kytos Team.
   </p>
    <ul class="prev-next-nav">
      <li>
-       <a href="/developer/platform" title="Read devel guide">
+       <a href="/developer/intro" title="Read devel guide">
          <span class="glyphicon glyphicon-chevron-right visible-sm"></span>
          <span class="hidden-sm hidden-tablet">Read devel guide »</span>
        </a>
@@ -70,8 +70,6 @@ Kytos Summit is the main Kytos Project’s event. In addition to afull schedule 
 
 .. toctree::
    :maxdepth: 3
-   :hidden:
-   :includehidden:
 
    intro
    architecture
@@ -81,5 +79,3 @@ Kytos Summit is the main Kytos Project’s event. In addition to afull schedule 
    hacking
    security
    pyof
-
-
