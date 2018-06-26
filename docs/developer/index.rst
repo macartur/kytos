@@ -9,7 +9,7 @@ KYTOS SDN PLATFORM WAS DESIGNED TO BE EASY TO USE, DEVELOP AND SHARE NETWORK APP
 
 This section was designed to lead new developers in understanding the Kytos
 project. First, we recommend the reading of the Kytos architecture in
-:doc:`Devel Guide </developer/platform>`. There you will learn how to install
+:doc:`Devel Guide </developer/intro>`. There you will learn how to install
 and configure Kytos and the NApps, as well as understand the develop
 environment. Then, give a try to the `tutorials <http://tutorials.kytos.io/>`__
 made by Kytos Team.
@@ -20,10 +20,9 @@ Here, we will discuss the future of the project as well as which features we wil
 Kytos Summit is the main Kytos Project's event. In addition to a full schedule of technical and social talks,
 Kytos Summit provides an opportunity for developers, contributors and other interested people to meet in person and work together more closely.
 
-
 .. raw:: html
 
-       <a href="/developer/platform" class="button-content" title="Read devel guide">
+       <a href="/developer/intro" class="button-content" title="Read devel guide">
          <span class="glyphicon glyphicon-chevron-right"></span>
          <span>Read devel guide</span>
        </a>
@@ -76,15 +75,4 @@ Tutorials
          <span>More tutorials</span>
        </a>
      </div>
-
-     
-
-.. toctree::
-   :maxdepth: 3
-   :hidden:
-
-   how_to_contribute
-   hacking
-   platform
-   pyof
 
