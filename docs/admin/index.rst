@@ -59,4 +59,15 @@ Tutorials
             <span>More tutorials</span>
         </a>
      </div>
-                     
+
+.. toctree::
+  :maxdepth: 3
+  :hidden:
+
+  intro
+  architecture
+  configuring
+  intro
+  napps
+  quick-start
+  web-ui
