@@ -162,8 +162,6 @@ Prints a list of all installed NApps along with their respective description and
 
    Status: (i)nstalled, (e)nabled
 
-..
-
   Reload
   ======
 
